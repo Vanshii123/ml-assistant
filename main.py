@@ -1,13 +1,12 @@
 """
-AI STUDY ASSISTANT - PRODUCTION VERSION
-Better error handling, improved relevancy, production-ready
+AI STUDY ASSISTANT - PRODUCTION VERSION (NO PyMuPDF)
+Works without PDF processing library for easier deployment
 """
 
 import pandas as pd
 import re
 import nltk
 import os
-import fitz
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
 import numpy as np
@@ -16,7 +15,6 @@ from sklearn.metrics.pairwise import cosine_similarity
 import pickle
 import warnings
 
-# Suppress MuPDF warnings
 warnings.filterwarnings('ignore')
 
 # ========================================
@@ -80,13 +78,12 @@ def initialize():
     if "url" not in df.columns:
         df["url"] = ""
     
-    # IMPROVED: Add more fields for better matching
-    # Combine title, subject, level for richer context
+    # Combine fields for better matching
     df["combined_text"] = (
         df["course_title"].fillna("") + " " + 
         df["subject"].fillna("") + " " + 
         df["level"].fillna("") + " " +
-        df["course_title"].fillna("")  # Repeat title for emphasis
+        df["course_title"].fillna("")
     )
     
     df["processed_text"] = df["combined_text"].apply(clean_text)
@@ -99,20 +96,14 @@ def clean_text(text):
     if not text or not isinstance(text, str):
         return ""
     
-    # Convert to lowercase
     text = text.lower()
-    
-    # Remove special characters but keep spaces
     text = re.sub(r"[^\w\s]", " ", text)
-    
-    # Remove extra spaces
     text = " ".join(text.split())
     
     if lemmatizer and stop_words:
-        # Lemmatize but keep important words
         words = []
         for word in text.split():
-            if word not in stop_words or len(word) > 3:  # Keep longer stop words
+            if word not in stop_words or len(word) > 3:
                 words.append(lemmatizer.lemmatize(word))
         return " ".join(words)
     
@@ -145,7 +136,6 @@ def ensure_embeddings_loaded():
             print("⚡ Loaded from cache!")
             return X
         
-        # First time - compute embeddings
         print("⏳ Computing embeddings (first time, ~1-2 min)...")
         ensure_model_loaded()
         
@@ -166,13 +156,16 @@ def ensure_embeddings_loaded():
     return X
 
 def ensure_pdfs_loaded():
-    """Load PDFs with better error handling"""
+    """
+    SIMPLIFIED PDF Loading - NO PyMuPDF needed!
+    Just returns filenames for now
+    """
     global pdf_df, pdf_vectors
     
     if pdf_df is not None:
         return pdf_df, pdf_vectors
     
-    print("📄 Loading PDF notes...")
+    print("📄 Loading PDF list...")
     
     # Try cache
     cached_df = load_from_cache(f"{CACHE_DIR}/pdf_data.pkl")
@@ -184,63 +177,40 @@ def ensure_pdfs_loaded():
         print(f"⚡ Loaded {len(pdf_df)} PDFs from cache")
         return pdf_df, pdf_vectors
     
-    # Process PDFs with better error handling
+    # Get PDF filenames WITHOUT reading content
     pdf_path = "data/Pdf"
     if not os.path.exists(pdf_path):
-        pdf_df = pd.DataFrame(columns=["pdf_file", "text", "clean_text"])
+        pdf_df = pd.DataFrame(columns=["pdf_file", "clean_text"])
         pdf_vectors = np.array([])
         return pdf_df, pdf_vectors
     
     pdf_files = [f for f in os.listdir(pdf_path) if f.endswith(".pdf")]
     if len(pdf_files) == 0:
-        pdf_df = pd.DataFrame(columns=["pdf_file", "text", "clean_text"])
+        pdf_df = pd.DataFrame(columns=["pdf_file", "clean_text"])
         pdf_vectors = np.array([])
         return pdf_df, pdf_vectors
     
-    print(f"   Processing {len(pdf_files)} PDFs...")
+    print(f"   Found {len(pdf_files)} PDFs")
     pdf_data = []
     
+    # Use FILENAME as search text (no content extraction needed!)
     for pdf_file in pdf_files:
-        try:
-            # IMPROVED: Extract ALL pages, not just first
-            doc = fitz.open(f"{pdf_path}/{pdf_file}")
-            
-            # Extract text from all pages (max 10 pages for performance)
-            pages_to_extract = min(len(doc), 10)
-            full_text = ""
-            
-            for page_num in range(pages_to_extract):
-                try:
-                    page_text = doc[page_num].get_text()
-                    full_text += page_text + " "
-                except:
-                    continue
-            
-            doc.close()
-            
-            if full_text.strip():
-                # IMPROVED: Use filename as additional context
-                filename_without_ext = pdf_file.replace('.pdf', '').replace('_', ' ').replace('-', ' ')
-                enhanced_text = filename_without_ext + " " + full_text
-                
-                pdf_data.append({
-                    "pdf_file": pdf_file,
-                    "text": full_text.strip(),
-                    "clean_text": clean_text(enhanced_text)
-                })
+        # Extract meaningful text from filename
+        filename_text = pdf_file.replace('.pdf', '').replace('_', ' ').replace('-', ' ')
         
-        except Exception as e:
-            # Silently skip problematic PDFs (MuPDF errors)
-            continue
+        pdf_data.append({
+            "pdf_file": pdf_file,
+            "clean_text": clean_text(filename_text)
+        })
     
     if not pdf_data:
-        pdf_df = pd.DataFrame(columns=["pdf_file", "text", "clean_text"])
+        pdf_df = pd.DataFrame(columns=["pdf_file", "clean_text"])
         pdf_vectors = np.array([])
         return pdf_df, pdf_vectors
     
     pdf_df = pd.DataFrame(pdf_data)
     
-    # Encode using clean text
+    # Encode filenames
     ensure_model_loaded()
     pdf_vectors = model.encode(
         pdf_df["clean_text"].tolist(), 
@@ -251,7 +221,7 @@ def ensure_pdfs_loaded():
     # Cache
     save_to_cache(pdf_df, f"{CACHE_DIR}/pdf_data.pkl")
     save_to_cache(pdf_vectors, PDF_EMBEDDINGS_CACHE)
-    print(f"✅ Processed {len(pdf_df)} PDFs successfully")
+    print(f"✅ Indexed {len(pdf_df)} PDFs by filename")
     
     return pdf_df, pdf_vectors
 
@@ -259,31 +229,20 @@ def ensure_pdfs_loaded():
 # RECOMMENDATION FUNCTIONS
 # ========================================
 def recommend_courses(course_title, top_n=5):
-    """
-    Recommend courses with improved relevancy
-    Returns top_n most similar courses
-    """
+    """Recommend courses with improved relevancy"""
     ensure_model_loaded()
     ensure_embeddings_loaded()
     
-    # Clean and encode query
     course_title_clean = clean_text(course_title)
     if not course_title_clean:
         return []
     
-    # Encode query
     input_embedding = model.encode([course_title_clean], convert_to_numpy=True)
-    
-    # Calculate similarity
     cosine_sim = cosine_similarity(input_embedding, X).flatten()
     
-    # IMPROVED: Get more results and filter by minimum threshold
-    similarity_threshold = 0.3  # Only show courses with >30% similarity
+    similarity_threshold = 0.3
+    top_indices = cosine_sim.argsort()[-top_n*2:][::-1]
     
-    # Get top candidates
-    top_indices = cosine_sim.argsort()[-top_n*2:][::-1]  # Get 2x results
-    
-    # Filter by threshold
     filtered_results = []
     for idx in top_indices:
         if cosine_sim[idx] >= similarity_threshold:
@@ -291,7 +250,6 @@ def recommend_courses(course_title, top_n=5):
         if len(filtered_results) >= top_n:
             break
     
-    # If too few results, lower threshold
     if len(filtered_results) < 3:
         filtered_results = top_indices[:top_n]
     
@@ -308,34 +266,23 @@ def recommend_courses(course_title, top_n=5):
     ]
 
 def recommend_pdfs(query, top_n=3):
-    """
-    Recommend PDFs with better relevancy
-    Returns top_n most similar PDFs
-    """
+    """Recommend PDFs based on filename matching"""
     ensure_model_loaded()
     ensure_pdfs_loaded()
     
     if pdf_df is None or len(pdf_df) == 0:
         return []
     
-    # Clean query
     query_clean = clean_text(query)
     if not query_clean:
         return []
     
-    # Encode query
     input_embedding = model.encode([query_clean], convert_to_numpy=True)
-    
-    # Calculate similarity
     cosine_sim = cosine_similarity(input_embedding, pdf_vectors).flatten()
     
-    # IMPROVED: Filter by threshold
     similarity_threshold = 0.25
-    
-    # Get top results
     top_indices = cosine_sim.argsort()[-top_n*2:][::-1]
     
-    # Filter by threshold and avoid duplicates
     filtered_results = []
     seen_files = set()
     
@@ -347,9 +294,8 @@ def recommend_pdfs(query, top_n=3):
         if len(filtered_results) >= top_n:
             break
     
-    # If no results meet threshold, return top results anyway
     if len(filtered_results) == 0 and len(top_indices) > 0:
-        filtered_results = [top_indices[0]]  # At least return the top match
+        filtered_results = [top_indices[0]]
     
     pdf_recommendations = pdf_df.iloc[filtered_results]["pdf_file"]
     
