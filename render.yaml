@@ -4,10 +4,11 @@ services:
     runtime: python
     plan: free
     buildCommand: |
-      pip install --upgrade pip
+      pip install --upgrade pip wheel setuptools
+      pip install --only-binary=:all: pandas numpy scikit-learn
       pip install -r requirements.txt
       python -c "import nltk; nltk.download('stopwords'); nltk.download('wordnet')"
-    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT --workers 1 --timeout 120
+    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT --workers 1 --timeout 300
     envVars:
       - key: PYTHON_VERSION
-        value: 3.11.7
+        value: "3.11"
