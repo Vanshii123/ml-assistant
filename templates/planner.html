@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Learning Planner - AI Study Assistant</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            padding: 20px;
+            color: white;
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: -1;
+        }
+
+        .welcome-message {
+            position: fixed;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: bold;
+            z-index: 1000;
+        }
+
+        .container {
+            background: rgba(0, 0, 0, 0.9);
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(255, 0, 127, 0.8);
+            width: 95%;
+            max-width: 900px;
+            margin-top: 80px;
+            margin-bottom: 40px;
+        }
+
+        h1 {
+            font-size: 38px;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: #ffffff;
+            text-align: center;
+        }
+
+        .subtitle {
+            color: #ff007f;
+            font-size: 16px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .mode-toggle {
+            margin: 20px 0;
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .mode-btn {
+            background: rgba(138, 43, 226, 0.3);
+            color: white;
+            border: 2px solid #8A2BE2;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .mode-btn:hover {
+            background: rgba(138, 43, 226, 0.6);
+            transform: translateY(-2px);
+        }
+
+        .mode-btn.active {
+            background: linear-gradient(90deg, #8A2BE2, #ff007f);
+            border-color: #ff007f;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 25px 0;
+        }
+
+        .form-group {
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            color: #ff007f;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .form-group select,
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #8A2BE2;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 16px;
+            outline: none;
+            transition: 0.3s;
+        }
+
+        .form-group select:focus,
+        .form-group input:focus {
+            border-color: #ff007f;
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .form-group select option {
+            background: #1a1a1a;
+            color: white;
+        }
+
+        button {
+            background: linear-gradient(90deg, #8A2BE2, #ff007f);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            margin-top: 20px;
+            font-size: 18px;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            width: 100%;
+        }
+
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(255, 0, 127, 0.6);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .loading {
+            display: none;
+            margin: 30px 0;
+            text-align: center;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-top: 4px solid #ff007f;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .results {
+            display: none;
+            margin-top: 30px;
+        }
+
+        .results.active {
+            display: block;
+        }
+
+        .plan-summary {
+            background: linear-gradient(135deg, #8A2BE2, #ff007f);
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            box-shadow: 0 0 20px rgba(255, 0, 127, 0.6);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .stat-box {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .week-card {
+            background: rgba(138, 43, 226, 0.2);
+            border-left: 4px solid #ff007f;
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 8px;
+            transition: 0.3s;
+            text-align: left;
+        }
+
+        .week-card:hover {
+            background: rgba(138, 43, 226, 0.3);
+            transform: translateX(5px);
+        }
+
+        .week-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .week-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #ff007f;
+        }
+
+        .week-hours {
+            background: #ff007f;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+        }
+
+        .skills-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 15px 0;
+        }
+
+        .skill-tag {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 13px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .reasoning-box {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            border-left: 3px solid #8A2BE2;
+        }
+
+        .resources-list {
+            margin-top: 15px;
+        }
+
+        .resource-item {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 10px 15px;
+            margin: 8px 0;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .resource-type {
+            background: #8A2BE2;
+            padding: 3px 10px;
+            border-radius: 10px;
+            font-size: 11px;
+            margin-right: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 25px;
+            }
+
+            h1 {
+                font-size: 28px;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="welcome-message">
+        AI Learning Planner - Your Personal Study Coach!
+    </div>
+
+    <div class="container">
+        <h1>🧠 AI Learning Planner</h1>
+        <p class="subtitle">Get a personalized study plan tailored to your goals</p>
+        
+        <div class="mode-toggle">
+            <a href="/" class="mode-btn">Quick Search</a>
+            <a href="/planner" class="mode-btn active">Smart Planner</a>
+        </div>
+
+        <div class="form-section">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="goal">Learning Goal</label>
+                    <select id="goal">
+                        <option value="ml_internship">Machine Learning Career</option>
+                        <option value="data_science">Data Science Role</option>
+                        <option value="web_development">Web Development</option>
+                        <option value="mobile_development">Mobile App Development</option>
+                        <option value="cloud_engineering">Cloud Engineering</option>
+                        <option value="cyber_security">Cyber Security</option>
+                        <option value="game_development">Game Development</option>
+                        <option value="devops_engineer">DevOps Engineering</option>
+                        <option value="blockchain_development">Blockchain Development</option>
+                        <option value="ml_engineer">ML Engineering</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="level">Current Level</label>
+                    <select id="level">
+                        <option value="beginner">Beginner</option>
+                        <option value="intermediate">Intermediate</option>
+                        <option value="advanced">Advanced</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="weeks">Timeline (weeks)</label>
+                    <input type="number" id="weeks" value="12" min="4" max="52">
+                </div>
+
+                <div class="form-group">
+                    <label for="hours">Hours per Day</label>
+                    <input type="number" id="hours" value="2" min="0.5" max="8" step="0.5">
+                </div>
+            </div>
+
+            <button onclick="generatePlan()" id="generateBtn">
+                Generate My Learning Plan
+            </button>
+        </div>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <h3>AI is creating your personalized plan...</h3>
+            <p>This takes about 10-15 seconds</p>
+        </div>
+
+        <div class="results" id="results">
+            <div class="plan-summary">
+                <h2>Your Personalized Learning Plan</h2>
+                <div class="stats-grid">
+                    <div class="stat-box">
+                        <div class="stat-value" id="totalWeeks">-</div>
+                        <div class="stat-label">Weeks</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value" id="totalHours">-</div>
+                        <div class="stat-label">Study Hours</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value" id="successProb">-</div>
+                        <div class="stat-label">Success Rate</div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="weeklyPlan"></div>
+        </div>
+    </div>
+
+    <script>
+        async function generatePlan() {
+            const goal = document.getElementById('goal').value;
+            const level = document.getElementById('level').value;
+            const weeks = parseInt(document.getElementById('weeks').value);
+            const hours = parseFloat(document.getElementById('hours').value);
+            
+            document.getElementById('loading').classList.add('active');
+            document.getElementById('results').classList.remove('active');
+            document.getElementById('generateBtn').disabled = true;
+
+            try {
+                const response = await fetch('/api/create-plan', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        goal: goal,
+                        level: level,
+                        weeks: weeks,
+                        hours_per_day: hours,
+                        days_per_week: 5
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    displayPlan(data.plan);
+                } else {
+                    alert('Error: ' + (data.error || 'Failed to generate plan'));
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to connect. Please try again.');
+            } finally {
+                document.getElementById('loading').classList.remove('active');
+                document.getElementById('generateBtn').disabled = false;
+            }
+        }
+
+        function displayPlan(plan) {
+            document.getElementById('totalWeeks').textContent = plan.total_weeks;
+            document.getElementById('totalHours').textContent = Math.round(plan.total_hours) + 'h';
+            document.getElementById('successProb').textContent = Math.round(plan.success_probability * 100) + '%';
+
+            const weeklyPlanDiv = document.getElementById('weeklyPlan');
+            weeklyPlanDiv.innerHTML = '<h2 style="color: #ff007f; margin: 20px 0;">Week-by-Week Breakdown</h2>';
+
+            plan.modules.forEach(module => {
+                const weekCard = document.createElement('div');
+                weekCard.className = 'week-card';
+                
+                let resourcesHtml = '';
+                if (module.resources && module.resources.length > 0) {
+                    resourcesHtml = '<div class="resources-list"><strong>Learning Resources:</strong>';
+                    module.resources.forEach(resource => {
+                        const typeLabel = resource.type.toUpperCase();
+                        resourcesHtml += `
+                            <div class="resource-item">
+                                <div>
+                                    <span class="resource-type">${typeLabel}</span>
+                                    ${resource.title}
+                                </div>
+                                ${resource.url ? `<a href="${resource.url}" target="_blank" style="color: #ff007f;">View</a>` : ''}
+                            </div>
+                        `;
+                    });
+                    resourcesHtml += '</div>';
+                }
+
+                weekCard.innerHTML = `
+                    <div class="week-header">
+                        <div class="week-title">Week ${module.week_number}: ${module.title}</div>
+                        <div class="week-hours">${module.estimated_hours.toFixed(1)}h</div>
+                    </div>
+                    <p><strong>Goal:</strong> ${module.objective}</p>
+                    <div class="skills-tags">
+                        ${module.skills_covered.map(skill => `<span class="skill-tag">${skill}</span>`).join('')}
+                    </div>
+                    ${resourcesHtml}
+                    <div class="reasoning-box">
+                        <strong>Why this order?</strong><br>
+                        ${module.reasoning}
+                    </div>
+                `;
+                
+                weeklyPlanDiv.appendChild(weekCard);
+            });
+
+            document.getElementById('results').classList.add('active');
+            document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>

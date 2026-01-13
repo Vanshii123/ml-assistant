@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Study Assistant</title>
-    <link href="https://fonts.googleapis.com/css2?family=Tangerine:wght@400;700&display=swap" rel="stylesheet">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
 
@@ -15,204 +14,347 @@
             font-family: 'Poppins', sans-serif;
         }
 
-        /* Fixing Background Image Path */
+        /* FIXED: Use gradient instead of image - no more loading issues! */
         body {
-            background: url('/templates/3d-neon-lights-background.jpg') no-repeat center center/cover;
-            height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
             flex-direction: column;
-            text-align: center;
+            padding: 20px;
             color: white;
         }
+
         body::before {
-        content: "";
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.5); /* Adjust opacity (0.5 = 50% opacity) */
-        z-index: -1; /* Keep it behind all content */
-        }
-        .container {
-        background: rgba(0, 0, 0, 0.9);
-        padding: 40px; /* Increased padding for better spacing */
-        border-radius: 10px;
-        box-shadow: 0 4px 20px rgba(255, 0, 127, 0.8);
-        width: 95%; /* Increased width */
-        max-width: 600px; /* Increased max-width */
-        height: auto; /* Allows content to expand */
-        min-height: 800px; /* Sets a minimum height */
-        animation: float 3s infinite ease-in-out; /* Adding floating animation */
-        margin-top: 100px;
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: -1;
         }
 
-
-        /* New Welcome Message Styling */
         .welcome-message {
-    position: absolute;
-    top: 5px;  /* Adjust as needed */
-    left: 50%;
-    transform: translateX(-50%);
-    background: rgba(255, 255, 255, 0.2); /* Semi-transparent white */
-    color: white;
-    padding: 5px 15px;
-    border-radius: 6px;
-    font-size: 1rem;
-    font-weight: bold;
-    text-align: center;
-    opacity: 1;
-    transition: opacity 1s ease-in-out;
-    min-height: 30px; /* Limit height */
-}
+            position: fixed;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: bold;
+            z-index: 1000;
+            animation: fadeIn 1s ease-in;
+        }
 
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translate(-50%, -20px); }
+            to { opacity: 1; transform: translate(-50%, 0); }
+        }
 
-        /* Header Styling */
+        .container {
+            background: rgba(0, 0, 0, 0.9);
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(255, 0, 127, 0.8);
+            width: 95%;
+            max-width: 700px;
+            margin-top: 80px;
+            animation: slideUp 0.5s ease-out;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
         h1 {
-            font-size: 35px;
+            font-size: 38px;
             margin-bottom: 15px;
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 1px;
             color: #ffffff;
-            font-family: 'Poppins', cursive;
-            text-shadow: 4px 4px 4px #aaa;
+            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.5);
+            text-align: center;
+        }
+
+        .mode-toggle {
+            margin: 20px 0;
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .mode-btn {
+            background: rgba(138, 43, 226, 0.3);
+            color: white;
+            border: 2px solid #8A2BE2;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .mode-btn:hover {
+            background: rgba(138, 43, 226, 0.6);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(138, 43, 226, 0.5);
+        }
+
+        .mode-btn.active {
+            background: linear-gradient(90deg, #8A2BE2, #ff007f);
+            border-color: #ff007f;
+        }
+
+        .badge {
+            background: linear-gradient(90deg, #ff007f, #ffa500);
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 10px;
+            margin-left: 5px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        form {
+            text-align: center;
+            margin: 25px 0;
         }
 
         input[type="text"] {
-            width: 80%;
-            padding: 12px;
+            width: 100%;
+            max-width: 500px;
+            padding: 14px;
             border: 2px solid #8A2BE2;
-            border-radius: 5px;
+            border-radius: 8px;
             outline: none;
             font-size: 16px;
-            margin-top: 10px;
             background: rgba(255, 255, 255, 0.1);
             color: white;
-            transition: 0.3s;
+            transition: all 0.3s;
+        }
+
+        input[type="text"]::placeholder {
+            color: rgba(255, 255, 255, 0.6);
         }
 
         input[type="text"]:focus {
             border-color: #ff007f;
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 0 15px rgba(255, 0, 127, 0.3);
         }
 
         button {
             background: linear-gradient(90deg, #8A2BE2, #ff007f);
             color: white;
             border: none;
-            padding: 12px 24px;
+            padding: 14px 35px;
             margin-top: 15px;
             font-size: 18px;
             cursor: pointer;
-            border-radius: 5px;
+            border-radius: 8px;
             transition: all 0.3s ease;
-            box-shadow: 0 0 10px rgba(255, 0, 127, 0.8);
+            box-shadow: 0 4px 15px rgba(255, 0, 127, 0.4);
+            font-weight: 600;
         }
 
         button:hover {
-            transform: scale(1.08);
-            box-shadow: 0 0 20px rgba(255, 0, 127, 1);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(255, 0, 127, 0.6);
+        }
+
+        button:active {
+            transform: translateY(-1px);
+        }
+
+        h2 {
+            color: #ff007f;
+            margin: 30px 0 15px 0;
+            font-size: 24px;
+            text-align: center;
         }
 
         ul {
             list-style-type: none;
-            margin-top: 20px;
+            margin-top: 15px;
         }
 
         ul li {
             background: rgba(138, 43, 226, 0.2);
-            padding: 12px;
-            margin: 5px 0;
-            border-radius: 5px;
-            transition: 0.3s ease-in-out;
-            color: white;
-            font-weight: 500;
-            box-shadow: 0 0 10px rgba(138, 43, 226, 0.5);
+            padding: 14px;
+            margin: 8px 0;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            border-left: 4px solid #8A2BE2;
         }
 
         ul li:hover {
-            background: rgba(138, 43, 226, 0.5);
-            transform: scale(1.05);
-            box-shadow: 0 0 15px rgba(138, 43, 226, 0.8);
+            background: rgba(138, 43, 226, 0.4);
+            transform: translateX(5px);
+            box-shadow: 0 4px 12px rgba(138, 43, 226, 0.5);
         }
 
-        /* Footer Styling */
-         /* Footer Styling */
-         .footer {
-            margin-top: 25px;
+        ul li a {
+            color: #ff007f;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        ul li a:hover {
+            color: #fff;
+        }
+
+        .error {
+            background: rgba(255, 0, 0, 0.2);
+            border: 2px solid #ff0000;
             padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            color: #ffcccc;
+        }
+
+        .footer {
+            margin-top: 40px;
+            padding: 20px;
             background: rgba(0, 0, 0, 0.85);
             border-radius: 10px;
-            box-shadow: 0 0 15px rgba(255, 0, 127, 0.8);
+            box-shadow: 0 4px 15px rgba(255, 0, 127, 0.3);
             color: white;
             text-align: center;
             font-size: 14px;
-            width: 95%;
-            max-width: 550px;
-            font-family: 'poppins', cursive; /* Same font as Header */
         }
 
         .footer a {
             color: #ff007f;
             text-decoration: none;
             font-weight: bold;
+            transition: color 0.3s;
         }
 
         .footer a:hover {
-            text-decoration: underline;
+            color: #fff;
         }
 
+        .footer p {
+            margin: 8px 0;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 25px;
+            }
+
+            h1 {
+                font-size: 28px;
+            }
+
+            input[type="text"] {
+                font-size: 14px;
+            }
+
+            button {
+                font-size: 16px;
+                padding: 12px 25px;
+            }
+        }
     </style>
 </head>
 <body>
     <!-- Welcome Message -->
     <div class="welcome-message">
-        Hey there, future genius! ✨ Let’s make studying fun & effortless. 🚀 Ready to explore? 💡
+        ✨ Hey there, future genius! Let's make studying fun & effortless 🚀
     </div>
 
     <div class="container">
-        <h1>📚 AI-Powered Study Assistant</h1>
+        <h1>👩🏻‍💻📚 AI-Powered Study Assistant</h1>
+        
+        <!-- Mode Toggle (only shows if agentic mode available) -->
+        {% if agentic_available %}
+        <div class="mode-toggle">
+            <a href="/" class="mode-btn active">
+                🔍 Quick Search
+            </a>
+            <a href="/planner" class="mode-btn">
+                🧠 Smart Planner
+                <span class="badge">NEW</span>
+            </a>
+        </div>
+        {% endif %}
+        
+        <!-- Search Form -->
         <form method="POST">
-            <input type="text" name="query" placeholder="Enter a study topic">
-            <button type="submit">Recommend</button>
+            <input type="text" 
+                   name="query" 
+                   placeholder="Enter a study topic (e.g., 'python programming', 'machine learning')" 
+                   required
+                   autocomplete="off">
+            <button type="submit">🚀 Find Resources</button>
         </form>
 
-        <h2>🔥 Recommended Courses:</h2>
+        <!-- Error Display -->
+        {% if error %}
+        <div class="error">
+            <strong>⚠️ Error:</strong> {{ error }}
+        </div>
+        {% endif %}
+
+        <!-- Course Recommendations -->
+        <h2>🔥 Recommended Courses</h2>
         <ul>
             {% if courses %}
                 {% for course in courses %}
-                    <li><a href="{{ course.url }}" target="_blank" style="color: #ff007f;">{{ course.course_title }}</a></li>
+                    <li>
+                        <a href="{{ course.url }}" target="_blank">
+                            {{ course.course_title }}
+                        </a>
+                    </li>
                 {% endfor %}
             {% else %}
-                <li>No course recommendations available.</li>
+                <li style="text-align: center; color: rgba(255,255,255,0.6);">
+                    Search for a topic to see course recommendations
+                </li>
             {% endif %}
         </ul>
-    <!-- PDF Recommendations -->
-<div class="pdf-section">
-    <h2>📜 Recommended PDF Notes:</h2>
-    <ul class="pdf-list">
-        {% if pdfs %}
-            {% for pdf in pdfs %}
-                <li>
-                    <a href="{{ url_for('serve_pdf', filename=pdf.pdf_file) }}" target="_blank">
-                        {{ pdf.pdf_file }}
-                    </a>
+
+        <!-- PDF Recommendations -->
+        <h2>📜 Recommended Study Notes</h2>
+        <ul>
+            {% if pdfs %}
+                {% for pdf in pdfs %}
+                    <li>
+                        <a href="{{ url_for('serve_pdf', filename=pdf.pdf_file) }}" target="_blank">
+                            📄 {{ pdf.pdf_file }}
+                        </a>
+                    </li>
+                {% endfor %}
+            {% else %}
+                <li style="text-align: center; color: rgba(255,255,255,0.6);">
+                    Search for a topic to see PDF notes
                 </li>
-            {% endfor %}
-        {% else %}
-            <li>No PDF recommendations available.</li>
-        {% endif %}
-    </ul>
-</div>
+            {% endif %}
+        </ul>
 
         <!-- Footer -->
         <div class="footer">
-            <p>Created with 💖 by <b>Vanshika Chauhan</b></p>
-            <p>Email: <a href="mailto:rv.chauhan322@gmail.com">rv.chauhan322@gmail.com</a></p>
-            <p>💡"Keep learning, keep growing, and never stop being curious!" 🚀</p>
+            <p>Created with 💖 by <strong>Vanshika Chauhan</strong></p>
+            <p>📧 <a href="mailto:rv.chauhan322@gmail.com">rv.chauhan322@gmail.com</a></p>
         </div>
     </div>
 </body>
