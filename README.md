@@ -2,7 +2,6 @@
 
 > **Intelligent learning companion that combines instant course search with autonomous curriculum generation**
 
-[![Live Demo](https://img.shields.io/badge/demo-live-success)](YOUR_RENDER_URL)
 [![Python](https://img.shields.io/badge/python-3.8+-blue)](https://python.org)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
@@ -133,12 +132,14 @@ http://127.0.0.1:5000
 ## 🎨 **Screenshots**
 
 ### Main Interface
-<img src="screenshots/main.png" alt="Main Interface" width="600"/>
+<img src="screenshots/Screenshot 2026-01-13 193605.png" alt="Main Interface" width="600"/>
 
 ### Smart Planner
-<img src="screenshots/planner.png" alt="Smart Planner" width="600"/>
+<img src="screenshots/Screenshot 2026-01-13 193626.png" alt="Smart Planner" width="600"/>
 
 ---
+<img src="screenshots/Screenshot 2026-01-13 193706.png" alt="Smart Planner" width="600"/>
+
 
 ## 🛠️ **Tech Stack**
 
@@ -293,7 +294,6 @@ This project demonstrates:
 - ✅ Problem-solving ability
 - ✅ Modern tech stack proficiency
 
-**Live Demo:** [YOUR_RENDER_URL]  
 **Built with 💖 and lots of ☕**
 
 ## **👩‍💻 Author**
