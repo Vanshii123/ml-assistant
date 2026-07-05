@@ -6,7 +6,14 @@ All features working, no errors, fast startup, no watchdog issues
 import os
 from flask import Flask, render_template, request, send_from_directory, jsonify
 from main import recommend_courses, recommend_pdfs, initialize
+from youtube_helper import get_youtube_search_link
+from content_ingestion import ContentStore, ingest_from_csv
 
+college_store = ContentStore()
+try:
+    college_store.load_cache("mait_content_cache.json")
+except Exception:
+    pass  # first run — no cache yet, ingest once you have his export and call save_cache()
 # Import agentic system (optional upgrade)
 try:
     from agent_models import UserProfile, LearningGoal, SkillLevel, LearningStyle, TimeConstraint
@@ -40,28 +47,31 @@ except Exception as e:
 # ========================================
 
 @app.route("/", methods=["GET", "POST"])
+@app.route("/", methods=["GET", "POST"])
 def home():
-    """Main search page"""
     courses = []
     pdfs = []
+    youtube_link = None
+    college_resources = []
     error = None
-    
+
     if request.method == "POST":
         query = request.form.get("query", "").strip()
-        
         if query:
             try:
                 courses = recommend_courses(query)
                 pdfs = recommend_pdfs(query)
-                print(f"✅ Search: '{query}' - {len(courses)} courses, {len(pdfs)} PDFs")
+                youtube_link = get_youtube_search_link(query, college="IPU")
+                college_resources = college_store.search(query, top_n=4)
             except Exception as e:
                 error = f"Search error: {str(e)}"
-                print(f"❌ {error}")
-    
+
     return render_template(
         "index.html",
         courses=courses,
         pdfs=pdfs,
+        youtube_link=youtube_link,
+        college_resources=college_resources,
         error=error,
         agentic_available=AGENTIC_MODE_AVAILABLE
     )

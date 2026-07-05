@@ -5,6 +5,7 @@ Pre-loads model once, batches all resource queries
 
 from typing import List, Dict, Tuple
 from agent_models import *
+from youtube_helper import get_youtube_search_link
 import random
 
 class LearningAgent:
@@ -234,6 +235,22 @@ class LearningAgent:
                         url=pdf.get('url', ''),
                         estimated_hours=2.0
                     ))
+                    # Add PDFs
+                for pdf in pdfs[:1]:  # Max 1 per skill
+                    resources.append(LearningResource(
+                        title=pdf.get('pdf_file', 'Notes'),
+                        type=ResourceType.PDF,
+                        url=pdf.get('url', ''),
+                        estimated_hours=2.0
+                    ))
+                
+                # NEW: Add YouTube suggestion — zero-cost, always available
+                resources.append(LearningResource(
+                    title=f"{skill} - Explained (YouTube)",
+                    type=ResourceType.VIDEO,
+                    url=get_youtube_search_link(skill),
+                    estimated_hours=1.0
+                ))
             
             module.resources = resources
             trace.step_3_resources[f"week_{module.week_number}"] = len(resources)
