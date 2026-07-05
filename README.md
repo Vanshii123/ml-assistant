@@ -1,4 +1,4 @@
-## 🎓 AI Study Assistant with Agentic Planning
+## 🎓 AI Study Assistant with Agentic Planning AND youtube videos recommendations
 
 > **Intelligent learning companion that combines instant course search with autonomous curriculum generation**
 
@@ -293,6 +293,8 @@ This project demonstrates:
 - ✅ Full-stack development
 - ✅ Problem-solving ability
 - ✅ Modern tech stack proficiency
+- 
+**LIVE DEMO: https://ai-study-assistant-53q7.onrender.com/**
 
 **Built with 💖 and lots of ☕**
 
